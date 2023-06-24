@@ -1,0 +1,63 @@
+--EXERCISE 1
+CREATE TABLE Science_class(Enrollment_no int,Name varchar,Science_Marks int);
+--EXERCISE 2
+insert into Science_class values(1,'Popeye',33) , (2,'Olive',54) , (3,'Brutus',98);
+copy Science_class from 'C:\Program Files\PostgreSQL\14\data\Data\M1_T3_V5 Student.csv' delimiter ',' csv header;
+--EXERCISE 3
+select * from science_class;
+select name from science_class where science_marks > 60;
+select * from science_class where science_marks > 35 and science_marks < 60;
+select * from science_class where science_marks <= 35 or science_marks >= 60;
+--EXERCISE 4
+update science_class set science_marks = 45 where name = 'Popeye';
+delete from science_class where name = 'Robb';
+alter table science_class rename column name to student_name;
+--EXERCISE 6
+select distinct city from customer where region in ('North','East');
+select * from sales where sales between 100 and 500;
+select * from customer where customer_name like '% ____';
+--EXERCISE 7
+select * from sales where discount > 0 order by discount desc;
+select * from sales where discount > 0 order by discount desc limit 10;
+--EXERCISE 8
+select sum(sales) as "Sum of all Sales" from sales;
+select count(*) as "No of people in north between 20 and 30" from customer where region = 'South' and age between 20 and 30;
+select avg(age) as "Average age of Customers from East" from customer where region = 'East';
+select min(age) as "Minimum Age - Philadelphia", max(age) as "Maximum Age - Philadelphia" from customer where city = 'Philadelphia';
+--EXERCISE 9
+select product_id, sum(Sales) as total_sales, sum(quantity) as total_sales_qty, count(order_id) as no_of_orders, max(Sales) as max_sale, min(sales) as min_sale, avg(sales) as avg_sale from sales group by product_id order by total_sales desc;
+select product_id, sum(quantity) as "Qty Sold" from sales group by product_id having sum(quantity) > 10;
+--EXERCISE 10
+select b.state, sum(a.sales) from sales_2015 as a full join customer_20_60 as b on a.customer_id = b.customer_id group by b.state; 
+select b.product_id, b.product_name, b.category, sum(a.sales) as total_sales, sum(a.quantity) as total_qty_sold from sales as a right join product as b on a.product_id = b.product_id group by b.product_id order by b.product_id;
+--EXERCISE 11
+select c.customer_name,c.age,sp.* from customer as c right join (select s.*,p.product_name,p.category from sales as s left join product as p on s.product_id = p.product_id) as sp on c.customer_id = sp.customer_id;
+select sales.*,customer.customer_name,customer.age,product.product_name,product.category
+from sales
+join (select customer_id, customer_name, age from customer) customer
+on sales.customer_id = customer.customer_id
+join (select product_id, product_name,category from product) product
+on sales.product_id = product.product_id;
+--EXERCISE 12
+create or replace view Daily_Billing as select order_line, product_id,sales,discount from sales where order_date in (select max(order_date) from sales);
+select * from daily_billing;
+drop view daily_billing;
+--EXERCISE 13
+select max(length(product_name)) as max_length_of_product_name from product;
+select product_name,category,sub_category,product_name||' , '||category||' , '||sub_category as product_details from product;
+select product_id,substring(product_id for 3) as category_id,substring(product_id from 5 for 2) as sub_category_id, substring(product_id from 8) as code_id from product;
+select sub_category,string_agg(product_name,',') from product where sub_category in ('Chairs','Tables') group by sub_category;
+--EXERCISE 14
+select customer_name from customer order by random() limit 5;
+select power(3,2);
+select sales,floor(sales) as lowest_value_of_sales from sales;
+select sales,ceil(sales) as highest_value_of_sales from sales;
+select sales,round(sales) as round_value_of_sales from sales;
+--EXERCISE 15
+select age(current_date,'1939,04-06') as current_age_of_batman;
+select extract(month from order_date) as Month, sum(sales) as Total_Sales from sales where product_id in (select product_id from product where sub_category = 'Chair') and (extract(year from order_date)) = 2015 group by (extract(month from order_date)) order by (extract(month from order_date));
+--EXERCISE 16
+select count(customer_name) from customer where customer_name ~* '^[a-z]{5}\s[a-d][a-z]{4}$';
+create table zipcode (pin text);
+insert into zipcode values (234432),(23345),('sdfe4'),('123&3'),(67424),(7895432),(12312);
+select count(pin) from zipcode where pin ~* '^[0-9]{5,6}$';

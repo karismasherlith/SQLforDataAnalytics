@@ -1,0 +1,129 @@
+--COPY
+copy customer_table from 'C:\Program Files\PostgreSQL\14\data\Data\M1_T3_V4 copy.csv' delimiter ',' csv header;
+copy customer_table from 'C:\Program Files\PostgreSQL\14\data\Data\M1_T3_V4 copytext.txt' delimiter ',';
+--SELECT
+select * from customer_table
+select first_name, last_name from customer_table;
+select cust_id from customer_table;
+--DISTINCT
+select distinct first_name from customer_table;
+select distinct first_name, age from customer_table;
+--WHERE
+select first_name from customer_table where age > 25;
+select * from customer_table where first_name = 'Gee';
+select first_name,last_name,age from customer_table where age > 20 and age < 30;
+select age from customer_table where not age = 35;
+--UPDATE
+update customer_table set last_name = 'pe',age = 17 where cust_id=2;
+update customer_table set email_id = 'gee@xyz.com' where first_name = 'Gee' or first_name = 'gee';
+--DELETE
+delete from customer_table where cust_id = 6;
+delete from customer_table where age > 30;
+delete from customer_table;
+--ALTER
+alter table customer_table add test varchar;
+alter table customer_table drop test;
+alter table customer_table alter column age type varchar;
+alter table customer_table rename column email_id to customer_email;
+alter table customer_table alter column cust_id set not null;
+alter table customer_table alter column cust_id drop not null;
+alter table customer_table add constraint cust_id check (cust_id>0);
+alter table customer_table add primary key (cust_id);
+--AGGREGATE FUNCTIONS
+select count(*) as Total_Sales from sales;
+select sum(quantity) as "Total Quantity" from sales where product_id = 'FUR-TA-10000577';
+select avg(age) as "Average Customer Age from East Region" from customer where region = 'East';
+select min(age) as "Minimum age of customer" from customer;
+select max(profit) as "Maximum Profit" from sales;
+--JOINS
+create table sales_2015 as select * from sales where ship_date between '2015-01-01' and '2015-12-31';
+create table customer_20_60 as select * from customer where age between 20 and 60;
+--INNER JOIN
+select a.order_line, a.product_id, a.customer_id, a.sales, b.customer_name, b.age from sales_2015 as a inner join customer_20_60 as b on a.customer_id = b.customer_id order by customer_id;
+--LEFT JOIN
+select a.order_line, a.product_id, a.customer_id, a.sales, b.customer_name, b.age from sales_2015 as a left join customer_20_60 as b on a.customer_id = b.customer_id order by customer_id;
+--RIGHT JOIN
+select a.order_line, a.product_id, b.customer_id, a.sales, b.customer_name, b.age from sales_2015 as a right join customer_20_60 as b on a.customer_id = b.customer_id order by customer_id;
+--OUTER JOIN
+select a.order_line, a.product_id, a.customer_id, a.sales, b.customer_name, b.age, b.customer_id from sales_2015 as a full join customer_20_60 as b on a.customer_id = b.customer_id order by a.customer_id, b.customer_id;
+--CROSS JOIN
+create table month_val (MM integer);
+create table year_val (YYYY integer);
+insert into month_val values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12);
+insert into year_val values (2022),(2023);
+select a.yyyy,b.mm from year_val as a, month_val as b order by a.yyyy,b.mm;
+--INTERSECT,EXCEPT,UNION
+select customer_id from sales_2015 INTERSECT select customer_id from customer_20_60;
+select customer_id from sales_2015 EXCEPT select customer_id from customer_20_60 order by customer_id;
+select customer_id from sales_2015 UNION select customer_id from customer_20_60 order by customer_id;
+--SUBQUERIES
+select * from sales where customer_id in (select distinct customer_id from customer where age > 60);
+select a.product_id,a.product_name,a.category,b.qty_sold from product as a left join (select product_id, sum(quantity) as qty_sold from sales group by product_id)as b on a.product_id = b.product_id order by b.qty_sold desc;
+select customer_id,order_line, (select customer_name from customer where customer.customer_id = sales.customer_id) from sales order by customer_id;
+--VIEW
+create view logistics as 
+select a.order_line,a.order_id,b.customer_name,b.city,b.state,b.country
+from sales as a left join customer as b on a.customer_id = b.customer_id
+order by a.order_line;
+select * from logistics;
+drop view logistics;
+--INDEX
+create index mon_idx on month_val(MM);
+drop index mon_idx;
+--STRING FUNCTIONS
+select customer_name, length(customer_name) as no_of_characters from customer where age >30 limit 5;
+select customer_name, upper(customer_name) as upper_case, lower(customer_name) as lower_case from customer limit 5;
+select customer_name,country, replace(country,'United States','US') as country_new from customer;
+select trim (leading ' ' from '     Stark-Technologies     ');
+select trim (trailing ' ' from '     Stark-Technologies     ');
+select trim (both ' ' from '     Stark-Technologies     ');
+select trim ('     Stark-Technologies     ');
+select rtrim ('     Stark-Technologies     ',' ');
+select ltrim ('     Stark-Technologies     ',' ');
+select customer_name, city||','||state||','||country as Address from customer limit 5;
+select customer_id,customer_name, substring(customer_id for 2) as cust_grp from customer where substring(customer_id for 2) = 'AB';
+select customer_id, customer_name, substring(customer_id from 4 for 5) as cust_no from customer where substring(customer_id for 2) = 'AB';
+select order_id, string_agg(product_id,' , ') from sales group by order_id;
+--MATH FUNCTIONS
+select sales, ceil(sales),floor(sales) from sales limit 5;
+select random()*(20-10)+10;
+select floor(random()*(20-10+1))+10;
+select setseed(0.5);
+select random(); --0.2499
+select random(); --0.5200
+select setseed(0.5);
+select random(); --0.2499
+select random(); --0.5200
+select sales, round(sales) from sales limit 3;
+select age,power(age,2) from customer limit 3;
+select power(2,5);
+--DATE-TIME FUNCTIONS
+select current_date,current_time,current_timestamp;
+select age('2023-12-10','2002-11-19');
+select age('2002-12-19');
+select extract(day from '2002-12-10');
+select extract(hour from '2002-11-19 11:35');
+select extract(second from '11:23:56');
+--PATTERN MATCHING
+select customer_name from customer where customer_name ~* '^a+[a-z\s]+$';
+select customer_name from customer where customer_name ~* '^(a|b|c|d)+[a-z\s]+$';
+select * from customer where customer_name ~* '[a-z0-9\.\-\_]+@[a-z0-9\-]+\.[a-z]{2,5}';
+--CONVERTING DATATYPE
+select sales, 'Total Sales ' ||to_char(sales,'$9999.99') as message from sales;
+select order_date, to_char(order_date,'dd.mm.yy') as new_date from sales;
+select order_date, to_char(order_date,'dd Month yyyy , day') as new_date from sales;
+select to_date('2002-12-10','yyyy-mm-dd');
+select to_number('1210.73','9999.99');
+select to_number('$1435.346482','l9999.99');
+--USER ACCESS CONTROL
+create user starttech with password 'academy';
+grant select, insert, update, delete on product to starttech;
+revoke delete on product from starttech;
+drop user starttech;
+revoke all on product from starttech;
+alter user starttech rename to st;
+drop user st;
+select * from pg_user;
+select distinct * from pg_stat_activity;
+--FINAL MODULE
+select * from pg_tablespace;
